@@ -7,13 +7,15 @@
     "packages/*"
   ],
   "scripts": {
-    "dev": "concurrently -n \"WEB,API\" -c \"cyan,magenta\" \"bun run dev:web\" \"bun run dev:api-core\"",
+    "dev": "bun run scripts/start-dev.ts",
     "dev:web": "cd apps/web && bun run dev",
     "dev:api-core": "cd apps/api-core && bun run start:dev",
     "dev:api-realtime": "cd apps/api-realtime && go run cmd/server/main.go"
   },
   "dependencies": {},
   "devDependencies": {
+    "@types/bun": "^1.3.14",
+    "@types/node": "^26.0.0",
     "concurrently": "^10.0.3"
   }
 }

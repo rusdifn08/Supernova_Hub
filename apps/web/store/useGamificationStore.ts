@@ -1,5 +1,4 @@
 import { create } from "zustand";
-import { persist } from "zustand/middleware";
 
 interface GamificationState {
   level: number;
@@ -11,82 +10,78 @@ interface GamificationState {
   recentExpGains: { id: string; amount: number; message: string }[];
   
   // Actions
-  gainExp: (amount: number, message: string) => void;
+  gainExp: (amount: number, message: string) => Promise<void>;
   gainGold: (amount: number) => void;
   spendGold: (amount: number) => boolean;
   clearExpGains: (id: string) => void;
+  setPlayerName: (name: string) => void;
+  setStats: (stats: Partial<GamificationState>) => void;
 }
 
 export const useGamificationStore = create<GamificationState>()(
-  persist(
-    (set) => ({
-      level: 1,
-      exp: 0,
-      maxExp: 1000,
-      gold: 50,
-      playerName: "Rusdi",
-      playerClass: "Novice Scholar",
-      recentExpGains: [],
+  (set, get) => ({
+    level: 1,
+    exp: 0,
+    maxExp: 1000,
+    gold: 50,
+    playerName: "Rusdi",
+    playerClass: "Novice Scholar",
+    recentExpGains: [],
 
-      gainExp: (amount, message) => set((state) => {
-        let newExp = state.exp + amount;
-        let newLevel = state.level;
-        let newMaxExp = state.maxExp;
-        
-        // Handle Level Up
-        if (newExp >= newMaxExp) {
-          newLevel += 1;
-          newExp = newExp - newMaxExp;
-          newMaxExp = Math.floor(newMaxExp * 1.5); // Increase requirement by 50%
-          
-          // Class progression
-          let newClass = state.playerClass;
-          if (newLevel >= 5) newClass = "Apprentice Adept";
-          if (newLevel >= 10) newClass = "Master Virtuoso";
-          if (newLevel >= 20) newClass = "Grandmaster Ascendant";
+    gainExp: async (amount, message) => {
+      // Optimistic update
+      const id = Date.now().toString();
+      set((state) => ({
+        recentExpGains: [...state.recentExpGains, { id, amount, message }]
+      }));
 
-          return {
-            exp: newExp,
-            level: newLevel,
-            maxExp: newMaxExp,
-            playerClass: newClass,
-            gold: state.gold + 100, // Bonus gold on level up
-            recentExpGains: [
-              ...state.recentExpGains, 
-              { id: Date.now().toString(), amount, message: `LEVEL UP! ${message}` }
-            ]
-          };
-        }
+      try {
+        const token = localStorage.getItem("access_token");
+        if (!token) return;
 
-        return {
-          exp: newExp,
-          recentExpGains: [
-            ...state.recentExpGains,
-            { id: Date.now().toString(), amount, message }
-          ]
-        };
-      }),
-
-      gainGold: (amount) => set((state) => ({ gold: state.gold + amount })),
-
-      spendGold: (amount) => {
-        let success = false;
-        set((state) => {
-          if (state.gold >= amount) {
-            success = true;
-            return { gold: state.gold - amount };
-          }
-          return state;
+        const res = await fetch(`http://${window.location.hostname}:4000/gamification/exp`, {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${token}`
+          },
+          body: JSON.stringify({ amount, message })
         });
-        return success;
-      },
+        
+        if (res.ok) {
+          const data = await res.json();
+          set({
+            level: data.level,
+            exp: data.exp,
+            maxExp: data.maxExp,
+            gold: data.gold,
+            playerClass: data.playerClass
+          });
+        }
+      } catch (err) {
+        console.error("Failed to sync EXP", err);
+      }
+    },
 
-      clearExpGains: (id) => set((state) => ({
-        recentExpGains: state.recentExpGains.filter((g) => g.id !== id)
-      }))
-    }),
-    {
-      name: "supernova-gamification-storage", // stores in localStorage
-    }
-  )
+    gainGold: (amount) => set((state) => ({ gold: state.gold + amount })),
+
+    spendGold: (amount) => {
+      let success = false;
+      set((state) => {
+        if (state.gold >= amount) {
+          success = true;
+          return { gold: state.gold - amount };
+        }
+        return state;
+      });
+      return success;
+    },
+
+    clearExpGains: (id) => set((state) => ({
+      recentExpGains: state.recentExpGains.filter((g) => g.id !== id)
+    })),
+
+    setPlayerName: (name) => set({ playerName: name }),
+    setStats: (stats) => set(stats)
+  })
 );

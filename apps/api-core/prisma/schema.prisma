@@ -17,6 +17,166 @@ model User {
   email     String   @unique
   password  String
   name      String?
+  
+  // Gamification fields
+  level       Int      @default(1)
+  exp         Int      @default(0)
+  maxExp      Int      @default(1000)
+  gold        Int      @default(50)
+  playerClass String   @default("Novice Scholar")
+
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
+
+  // Relations
+  productivityItems ProductivityItem[]
+  notes             WorkspaceNote[]
+  expHistory        ExpHistory[]
+  readingBooks      ReadingBook[]
+  financeTransactions FinanceTransaction[]
+  financeCategories   FinanceCategory[]
+  learningCourses     UserCourse[]
+  learningProgresses  UserModuleProgress[]
+}
+
+model FinanceTransaction {
+  id        String   @id @default(uuid())
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  type      String   // "INCOME" or "EXPENSE"
+  amount    Float
+  name      String
+  category  String
+  date      DateTime @default(now())
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model FinanceCategory {
+  id        String   @id @default(uuid())
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  type      String   // "INCOME" or "EXPENSE"
+  name      String
+  icon      String
+  color     String
+  bg        String
+  border    String
+
+  createdAt DateTime @default(now())
+}
+
+enum ProductivityType {
+  TODO
+  WEEKLY
+  HABIT
+}
+
+model ProductivityItem {
+  id          String   @id @default(uuid())
+  userId      String
+  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  type        ProductivityType
+  title       String
+  isCompleted Boolean  @default(false)
+  day         String?  // Optional, used for WEEKLY tasks
+  streak      Int      @default(0) // Used for HABIT
+  lastCompleted DateTime? // Used for HABIT
+
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+}
+
+model WorkspaceNote {
+  id        String   @id @default(uuid())
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  title     String
+  content   String   @db.Text
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model ReadingBook {
+  id            String   @id @default(uuid())
+  userId        String
+  user          User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  title         String
+  author        String
+  totalPages    Int      @default(0)
+  readPages     Int      @default(0)
+  currentChapter String?
+  status        String   @default("PLAN_TO_READ") // READING, PLAN_TO_READ, COMPLETED
+  notes         String?  @db.Text
+
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+}
+
+model Course {
+  id          String         @id @default(uuid())
+  title       String
+  description String?        @db.Text
+  thumbnail   String?
+  totalDuration String?
+  modules     CourseModule[]
+  enrollments UserCourse[]
+  
+  createdAt   DateTime       @default(now())
+  updatedAt   DateTime       @updatedAt
+}
+
+model CourseModule {
+  id          String   @id @default(uuid())
+  courseId    String
+  course      Course   @relation(fields: [courseId], references: [id], onDelete: Cascade)
+  title       String
+  duration    String
+  orderIndex  Int
+  contentMd   String   @db.Text
+  progresses  UserModuleProgress[]
+  
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+}
+
+model UserCourse {
+  id              String   @id @default(uuid())
+  userId          String
+  user            User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  courseId        String
+  course          Course   @relation(fields: [courseId], references: [id], onDelete: Cascade)
+  progressPercent Float    @default(0.0)
+  status          String   @default("LEARNING") // LEARNING, COMPLETED
+
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  @@unique([userId, courseId])
+}
+
+model UserModuleProgress {
+  id          String   @id @default(uuid())
+  userId      String
+  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  moduleId    String
+  module      CourseModule @relation(fields: [moduleId], references: [id], onDelete: Cascade)
+  isCompleted Boolean  @default(false)
+  
+  completedAt DateTime?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@unique([userId, moduleId])
+}
+model ExpHistory {
+  id        String   @id @default(uuid())
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  amount    Int
+  message   String
+
+  createdAt DateTime @default(now())
 }

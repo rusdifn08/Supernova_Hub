@@ -51,6 +51,16 @@ export class AuthService {
     return this.generateToken(user);
   }
 
+  async getProfile(userId: string) {
+    return this.prisma.user.findUnique({
+      where: { id: userId },
+      select: { 
+        id: true, email: true, name: true,
+        level: true, exp: true, maxExp: true, gold: true, playerClass: true
+      }
+    });
+  }
+
   private generateToken(user: any) {
     const payload = { email: user.email, sub: user.id };
     return {

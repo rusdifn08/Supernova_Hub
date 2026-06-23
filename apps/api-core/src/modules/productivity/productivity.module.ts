@@ -1,0 +1,12 @@
+import { Module } from '@nestjs/common';
+import { ProductivityService } from './productivity.service';
+import { ProductivityController } from './productivity.controller';
+import { PrismaModule } from '../../prisma/prisma.module';
+import { GamificationModule } from '../gamification/gamification.module';
+
+@Module({
+  imports: [PrismaModule, GamificationModule],
+  controllers: [ProductivityController],
+  providers: [ProductivityService],
+})
+export class ProductivityModule {}
