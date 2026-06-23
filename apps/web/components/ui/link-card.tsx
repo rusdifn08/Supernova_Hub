@@ -1,10 +1,10 @@
 "use client";
 
 import React from 'react';
-import { motion } from 'framer-motion';
+import { motion, Variants, HTMLMotionProps } from 'framer-motion';
 import { cn } from '@/lib/utils'; 
 
-interface LinkCardProps extends React.AnchorHTMLAttributes<HTMLAnchorElement> {
+interface LinkCardProps extends HTMLMotionProps<"a"> {
   title: string;
   description: string;
   imageUrl: string;
@@ -13,7 +13,7 @@ interface LinkCardProps extends React.AnchorHTMLAttributes<HTMLAnchorElement> {
 
 const LinkCard = React.forwardRef<HTMLAnchorElement, LinkCardProps>(
   ({ className, title, description, imageUrl, href, ...props }, ref) => {
-    const cardVariants = {
+    const cardVariants: Variants = {
       initial: { scale: 1, y: 0 },
       hover: {
         scale: 1.03,
