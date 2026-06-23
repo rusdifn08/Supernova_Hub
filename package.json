@@ -1,0 +1,19 @@
+{
+  "name": "supernova-learning-platform",
+  "version": "1.0.0",
+  "private": true,
+  "workspaces": [
+    "apps/*",
+    "packages/*"
+  ],
+  "scripts": {
+    "dev": "concurrently -n \"WEB,API\" -c \"cyan,magenta\" \"bun run dev:web\" \"bun run dev:api-core\"",
+    "dev:web": "cd apps/web && bun run dev",
+    "dev:api-core": "cd apps/api-core && bun run start:dev",
+    "dev:api-realtime": "cd apps/api-realtime && go run cmd/server/main.go"
+  },
+  "dependencies": {},
+  "devDependencies": {
+    "concurrently": "^10.0.3"
+  }
+}
