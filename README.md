@@ -1,11 +1,12 @@
-# Supernova Learning Platform
+# Supernova Hub (Learning, Productivity & Finance)
 
-Sebuah platform pembelajaran modern dan interaktif yang dibangun menggunakan arsitektur monorepo dengan performa tinggi. Platform ini dirancang untuk memberikan pengalaman belajar (e-learning) tingkat lanjut yang dilengkapi dengan fitur real-time, integrasi animasi 3D, dan antarmuka yang sangat dinamis.
+Sebuah platform *All-in-One* modern dan interaktif yang dibangun menggunakan arsitektur monorepo dengan performa tinggi. Platform ini dirancang untuk menjadi pusat kehidupan digital Anda—menggabungkan pengalaman **e-learning** tingkat lanjut, **Productivity Tracker** yang komprehensif (seperti alternatif Notion), serta sistem **Money Management** cerdas untuk mengelola keuangan dan aset.
 
 ## 🌟 Keunggulan Aplikasi
 
+- **All-in-One Super App**: Satu aplikasi terpusat untuk belajar, mengelola produktivitas, dan memantau kesehatan finansial Anda.
 - **Arsitektur Monorepo & Microservices**: Source code terkelola rapi yang memudahkan skalabilitas dan pengembangan tim.
-- **Real-Time Interactivity**: Komunikasi instan dengan dukungan WebSockets (Gorilla WS) dan Redis untuk fitur seperti live chat, kuis interaktif, atau notifikasi.
+- **Real-Time Interactivity**: Komunikasi instan dengan dukungan WebSockets (Gorilla WS) dan Redis untuk sinkronisasi seketika antar perangkat.
 - **Pengalaman Visual Memukau (Next-Gen UI)**: Dibangun dengan Next.js 16 dan React 19, dilengkapi Three.js (Fiber) untuk model 3D, serta Framer Motion, GSAP, dan Rive App untuk transisi dan animasi micro-interactions yang mulus.
 - **Performa Backend Tinggi & Aman**: Menggunakan kombinasi NestJS (TypeScript) dengan Prisma ORM (PostgreSQL) sebagai API Core, dan Golang (Go 1.26) sebagai Real-Time API untuk menghandle *high-concurrency*.
 - **Dockerized**: Semua infrastruktur pendukung dapat dijalankan dengan mudah melalui container Docker.
@@ -13,11 +14,24 @@ Sebuah platform pembelajaran modern dan interaktif yang dibangun menggunakan ars
 
 ## 🚀 Fitur Utama
 
-1. **Sistem Autentikasi**: Login dan registrasi yang aman bagi pengguna.
-2. **Manajemen Pengguna**: Pengelolaan data pengguna menggunakan database terpusat (PostgreSQL).
-3. **Pembelajaran Interaktif & Visualisasi 3D**: Menyajikan materi pembelajaran dengan cara yang jauh lebih interaktif menggunakan rendering objek tiga dimensi pada web browser.
-4. **Koneksi State Cepat**: Menggunakan Zustand untuk manajemen state yang efisien dan tanpa hambatan pada sisi frontend.
-5. **Real-time Synchronized Data**: Aktivitas pengguna dapat tersinkronisasi secara seketika melalui microservice berbasis Go dan event pub/sub di Redis.
+### 📚 1. E-Learning Platform
+- **Pembelajaran Interaktif & Visualisasi 3D**: Menyajikan materi pembelajaran dengan cara yang jauh lebih interaktif menggunakan rendering objek tiga dimensi pada web browser.
+- **Live Class & Real-time Quiz**: Terintegrasi langsung dengan WebSocket untuk pengalaman belajar dua arah.
+
+### 🎯 2. Productivity Tracker (Notion-like)
+- **To-Do List & Task Management**: Mengelola tugas harian dan proyek dengan struktur yang jelas.
+- **Habit Tracker**: Memantau perkembangan kebiasaan baik setiap hari dengan analitik mendalam.
+- **Workspace & Notes**: Ruang kerja terpadu bergaya Notion untuk menulis catatan, mendokumentasikan ide, dan berkolaborasi secara real-time.
+
+### 💰 3. Money Management & Assets
+- **Income & Expense Tracking**: Pencatatan arus kas (pengeluaran dan pemasukan) harian yang rinci.
+- **Asset & Investment Management**: Mengelola portofolio investasi dan memantau pertumbuhan berbagai jenis aset (saham, reksa dana, properti, dll) di satu dashboard.
+- **Financial Analytics**: Grafik interaktif untuk merencanakan anggaran dan memproyeksikan target finansial bulanan hingga tahunan.
+
+### ⚙️ 4. Core System
+- **Sistem Autentikasi**: Login dan registrasi yang aman bagi pengguna.
+- **Koneksi State Cepat**: Menggunakan Zustand untuk manajemen state yang efisien pada sisi frontend.
+- **Real-time Synchronized Data**: Aktivitas pengguna di seluruh fitur (belajar, tugas, keuangan) akan tersinkronisasi seketika berkat event pub/sub di Redis dan Golang microservices.
 
 ## 🛠️ Cara Menjalankan Aplikasi (How to Run)
 
@@ -84,4 +98,4 @@ Jika Anda ingin menjalankan setiap service di terminal yang berbeda, Anda dapat 
   ```
 
 ---
-*Supernova Learning Platform — Merevolusi cara belajar melalui teknologi interaktif mutakhir.*
+*Supernova Hub — Merevolusi gaya hidup digital Anda dari edukasi, produktivitas, hingga manajemen keuangan melalui teknologi mutakhir.*
