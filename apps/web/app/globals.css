@@ -1,0 +1,56 @@
+@import "tailwindcss";
+
+:root {
+  --background: #ffffff;
+  --foreground: #171717;
+  --button-ripple-color: oklch(0.145 0 0 / 0.3);
+}
+
+@theme inline {
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --font-sans: var(--font-geist-sans);
+  --font-mono: var(--font-geist-mono);
+  --radius-none: 0px;
+  --radius-xs: 0.125rem;
+  --radius-default: 0.375rem;
+  --radius-2xl: 1.5rem;
+  --radius-3xl: 1.875rem;
+  --radius-full: 9999px;
+  --color-button-ripple-color: var(--button-ripple-color);
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --background: oklch(0.10 0 0);
+    --foreground: #ededed;
+    --button-ripple-color: oklch(0.985 0 0 / 0.5);
+  }
+}
+.dark {
+  --background: oklch(0.10 0 0);
+  --button-ripple-color: oklch(0.985 0 0 / 0.5);
+}
+
+body {
+  background: var(--background);
+  color: var(--foreground);
+  font-family: Arial, Helvetica, sans-serif;
+}
+
+/* Hide scrollbar globally for a native app feel */
+::-webkit-scrollbar {
+  display: none;
+}
+* {
+  -ms-overflow-style: none;  /* IE and Edge */
+  scrollbar-width: none;  /* Firefox */
+}
+
+.custom-scrollbar::-webkit-scrollbar {
+  display: none;
+}
+.custom-scrollbar {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
