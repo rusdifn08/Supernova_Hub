@@ -57,6 +57,29 @@ export class GamificationService {
     };
   }
 
+  async deductExp(userId: string, amount: number, message: string) {
+    const user = await this.prisma.user.findUnique({ where: { id: userId } });
+    if (!user) return null;
+
+    let newExp = user.exp - amount;
+    if (newExp < 0) newExp = 0; // Prevent negative EXP
+
+    const updatedUser = await this.prisma.user.update({
+      where: { id: userId },
+      data: { exp: newExp }
+    });
+
+    const expLog = await this.prisma.expHistory.create({
+      data: { userId, amount: -amount, message }
+    });
+
+    return {
+      level: updatedUser.level,
+      exp: updatedUser.exp,
+      newLog: { id: expLog.id, amount: expLog.amount, message: expLog.message }
+    };
+  }
+
   async getStats(userId: string) {
     const user = await this.prisma.user.findUnique({ where: { id: userId } });
     const history = await this.prisma.expHistory.findMany({

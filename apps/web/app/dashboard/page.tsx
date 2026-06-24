@@ -69,6 +69,15 @@ export default function DashboardPage() {
   const [readingBooks, setReadingBooks] = useState<any[]>([]);
   const [learningCourses, setLearningCourses] = useState<any[]>([]);
   const [totalBalance, setTotalBalance] = useState(0);
+  const [calendarData, setCalendarData] = useState<any[]>([]);
+  const [wibTime, setWibTime] = useState("");
+
+  useEffect(() => {
+    const timer = setInterval(() => {
+      setWibTime(new Date().toLocaleTimeString('id-ID', { timeZone: 'Asia/Jakarta', hour: '2-digit', minute: '2-digit', second: '2-digit' }) + " WIB");
+    }, 1000);
+    return () => clearInterval(timer);
+  }, []);
 
   useEffect(() => {
     const fetchProductivity = async () => {
@@ -78,7 +87,8 @@ export default function DashboardPage() {
           const [prodRes, finRes, learnRes] = await Promise.all([
             fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:4000'}/productivity`, { headers: { Authorization: `Bearer ${token}` } }),
             fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:4000'}/finance`, { headers: { Authorization: `Bearer ${token}` } }),
-            fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:4000'}/learning`, { headers: { Authorization: `Bearer ${token}` } })
+            fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:4000'}/learning`, { headers: { Authorization: `Bearer ${token}` } }),
+            fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:4000'}/productivity/calendar`, { headers: { Authorization: `Bearer ${token}` } })
           ]);
           
           if (prodRes.ok) {
@@ -96,6 +106,10 @@ export default function DashboardPage() {
           if (learnRes.ok) {
             const data = await learnRes.json();
             setLearningCourses(data || []);
+          }
+          if (calRes.ok) {
+            const data = await calRes.json();
+            setCalendarData(data || []);
           }
         } catch (err) {
           console.error("Failed to fetch productivity data", err);
@@ -497,11 +511,49 @@ export default function DashboardPage() {
 
         </div>
 
-        {/* Right Sidebar - Flex on all screens, moves to bottom when stacking on smaller devices */}
-        <div className="flex flex-col gap-4 w-full xl:w-[clamp(240px,20vw,280px)] shrink-0 xl:h-full min-h-[300px]">
+        <div className="flex flex-col gap-3 md:gap-4 w-full xl:w-[clamp(240px,20vw,280px)] shrink-0 xl:h-full min-h-[300px]">
           
+          {/* Calendar Heatmap */}
+          <motion.div initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} transition={{ delay: 0.2 }} className="bg-black/40 backdrop-blur-xl border border-white/10 rounded-xl p-3 flex flex-col overflow-hidden shrink-0 xl:h-[30%]">
+            <div className="flex flex-col mb-2 shrink-0">
+              <h3 className="text-[clamp(0.875rem,1.2vw,1rem)] font-bold text-white shrink-0 flex items-center justify-between">
+                Daily Performance
+                <span className="text-[10px] text-cyan-400 font-mono bg-cyan-900/30 px-2 py-0.5 rounded-full">{wibTime}</span>
+              </h3>
+              <p className="text-[11px] text-gray-300 mt-1 font-medium">{new Date().toLocaleDateString('id-ID', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric', timeZone: 'Asia/Jakarta' })}</p>
+            </div>
+            
+            <div className="flex-1 overflow-y-auto custom-scrollbar flex items-center justify-center">
+              <div className="grid grid-cols-10 gap-1.5 p-1 w-full max-w-[260px]">
+                {Array.from({ length: new Date(new Date().getFullYear(), new Date().getMonth() + 1, 0).getDate() }, (_, i) => {
+                  const day = i + 1;
+                  const isToday = day === new Date().getDate();
+                  const record = calendarData.find(d => new Date(d.date).getDate() === day);
+                  
+                  // Default style for future or unrecorded dates
+                  let colorClass = isToday 
+                    ? "bg-cyan-500/20 border border-cyan-400 text-cyan-100 shadow-[0_0_8px_rgba(34,211,238,0.5)] ring-1 ring-cyan-400" 
+                    : "bg-blue-900/20 border border-blue-500/40 text-blue-100/70"; 
+                    
+                  if (record) {
+                    if (record.status === "GREEN") colorClass = "bg-green-500 border border-green-400 text-white shadow-[0_0_8px_rgba(34,197,94,0.5)]";
+                    else if (record.status === "YELLOW") colorClass = "bg-yellow-400 border border-yellow-300 text-yellow-950 shadow-[0_0_8px_rgba(250,204,21,0.5)]";
+                    else if (record.status === "ORANGE") colorClass = "bg-orange-500 border border-orange-400 text-white shadow-[0_0_8px_rgba(249,115,22,0.5)]";
+                    else if (record.status === "RED") colorClass = "bg-red-500 border border-red-400 text-white shadow-[0_0_8px_rgba(239,68,68,0.5)]";
+                  }
+                  
+                  return (
+                    <div key={day} className={`aspect-square rounded-sm flex items-center justify-center text-[9px] font-bold cursor-pointer hover:scale-110 transition-transform ${colorClass}`} title={record ? `Completed: ${record.completedTasks}, Failed: ${record.failedTasks + record.failedHabits}` : (isToday ? 'Today' : 'No data')}>
+                      {day}
+                    </div>
+                  );
+                })}
+              </div>
+            </div>
+          </motion.div>
+
           {/* Recent Activity */}
-          <motion.div initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} transition={{ delay: 0.3 }} className="bg-black/40 backdrop-blur-xl border border-white/10 rounded-xl p-3 flex flex-col overflow-hidden flex-1 xl:h-[70%]">
+          <motion.div initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} transition={{ delay: 0.3 }} className="bg-black/40 backdrop-blur-xl border border-white/10 rounded-xl p-3 flex flex-col overflow-hidden flex-1 xl:h-[40%]">
             <h3 className="text-[clamp(0.875rem,1.2vw,1rem)] font-bold text-white mb-3 shrink-0">Recent Activity</h3>
             <div className="flex-1 overflow-y-auto custom-scrollbar pr-1 space-y-2">
               <div className="flex items-center gap-2 p-2 hover:bg-white/5 rounded-lg transition-colors cursor-pointer">

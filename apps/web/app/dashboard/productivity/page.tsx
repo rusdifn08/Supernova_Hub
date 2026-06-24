@@ -21,6 +21,46 @@ export default function ProductivityPage() {
   const [bookAuthor, setBookAuthor] = useState("");
   const [bookTotalPages, setBookTotalPages] = useState("");
 
+  const [todos, setTodos] = useState<any[]>([]);
+  const [weekly, setWeekly] = useState<any[]>([]);
+  const [habits, setHabits] = useState<any[]>([]);
+
+  React.useEffect(() => {
+    fetchData();
+  }, []);
+
+  const fetchData = async () => {
+    const token = localStorage.getItem("access_token");
+    if (!token) return;
+    try {
+      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:4000'}/productivity`, {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+      const data = await res.json();
+      if (data) {
+        setTodos(data.todos || []);
+        setWeekly(data.weekly || []);
+        setHabits(data.habits || []);
+      }
+    } catch (err) {
+      console.error(err);
+    }
+  };
+
+  const handleToggle = async (id: string, status: string) => {
+    if (status === 'FAILED') {
+      showToast("Cannot complete a failed task!");
+      return;
+    }
+    const token = localStorage.getItem("access_token");
+    if (!token) return;
+    await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:4000'}/productivity/${id}/toggle`, {
+      method: 'PATCH',
+      headers: { Authorization: `Bearer ${token}` }
+    });
+    fetchData();
+  };
+
   // Toast / notification state
   const [toast, setToast] = useState<{message: string, show: boolean}>({ message: "", show: false });
 
@@ -39,7 +79,7 @@ export default function ProductivityPage() {
       });
       showToast(`To-Do added: ${todoInput}`);
       setTodoInput("");
-      gainExp(10, "Added a new To-Do task!");
+      fetchData();
     }
   };
 
@@ -53,7 +93,7 @@ export default function ProductivityPage() {
       });
       showToast(`Task added for ${selectedDay}: ${weeklyInput}`);
       setWeeklyInput("");
-      gainExp(10, "Scheduled a Weekly Task!");
+      fetchData();
     }
   };
 
@@ -67,7 +107,7 @@ export default function ProductivityPage() {
       });
       showToast(`New Habit tracked: ${habitInput}`);
       setHabitInput("");
-      gainExp(15, "Started a new Habit!");
+      fetchData();
     }
   };
 
@@ -156,12 +196,21 @@ export default function ProductivityPage() {
               
               {/* Active Items List to fill space */}
               <div className="flex-1 overflow-y-auto mb-2 space-y-1.5 custom-scrollbar pr-1 mt-1">
-                {['Review pull request #42', 'Update project documentation', 'Team sync at 3 PM'].map((task, i) => (
-                  <div key={i} className="flex items-center gap-2 text-[11px] md:text-xs text-gray-300 bg-white/5 p-2 rounded-lg border border-white/5 hover:bg-white/10 transition-colors cursor-pointer">
-                    <div className="w-3 h-3 rounded border border-gray-500 shrink-0" />
-                    <span className="truncate">{task}</span>
-                  </div>
-                ))}
+                {todos.map((task) => {
+                  const isFailed = task.status === 'FAILED';
+                  return (
+                    <div key={task.id} onClick={() => handleToggle(task.id, task.status)} className={cn("flex items-center gap-2 text-[11px] md:text-xs p-2 rounded-lg border transition-colors cursor-pointer", isFailed ? "bg-red-500/10 border-red-500/30 text-red-400 line-through" : task.isCompleted ? "bg-green-500/10 border-green-500/30 text-green-400" : "bg-white/5 border-white/5 text-gray-300 hover:bg-white/10")}>
+                      <div className={cn("w-3 h-3 rounded border shrink-0 flex items-center justify-center", isFailed ? "border-red-500" : task.isCompleted ? "border-green-500 bg-green-500 text-black" : "border-gray-500")}>
+                        {task.isCompleted && !isFailed && <CheckSquare className="w-2.5 h-2.5" />}
+                        {isFailed && <X className="w-2.5 h-2.5" />}
+                      </div>
+                      <span className="truncate flex-1">{task.title}</span>
+                      {!task.isCompleted && !isFailed && task.dueDate && (
+                        <span className="text-[9px] text-gray-500 shrink-0">Due: {new Date(task.dueDate).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})}</span>
+                      )}
+                    </div>
+                  );
+                })}
               </div>
 
               <div className="mt-auto flex gap-2 shrink-0">
@@ -181,18 +230,12 @@ export default function ProductivityPage() {
             <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.1 }} className="bg-black/40 backdrop-blur-xl border border-white/10 rounded-xl md:rounded-2xl p-3 md:p-4 flex flex-col h-full overflow-hidden">
               <h3 className="text-base md:text-lg font-bold text-white mb-2 flex items-center gap-2"><Calendar className="w-4 h-4 text-purple-400" /> Schedule Weekly Task</h3>
               
-              <div className="grid grid-cols-4 gap-1 mb-2 shrink-0">
-                {days.slice(0, 4).map(day => (
-                  <button key={day} onClick={() => setSelectedDay(day)} className={cn("text-[9px] py-1 rounded-md border transition-colors truncate", selectedDay === day ? "bg-purple-500/20 border-purple-500 text-purple-400" : "border-white/10 text-gray-500 hover:bg-white/5")}>{day.slice(0,3)}</button>
-                ))}
-              </div>
-              
               {/* Active Items List to fill space */}
-              <div className="flex-1 overflow-y-auto mb-2 space-y-1.5 custom-scrollbar pr-1">
-                {['Prepare presentation deck', 'Client meeting prep', 'Weekly performance review'].map((task, i) => (
-                  <div key={i} className="flex items-center gap-2 text-[11px] md:text-xs text-purple-100/70 bg-purple-500/10 p-2 rounded-lg border border-purple-500/20">
-                    <div className="w-1.5 h-1.5 rounded-full bg-purple-500 shrink-0" />
-                    <span className="truncate">{task}</span>
+              <div className="flex-1 overflow-y-auto mb-2 space-y-1.5 custom-scrollbar pr-1 mt-1">
+                {weekly.map((task) => (
+                  <div key={task.id} onClick={() => handleToggle(task.id, task.status)} className={cn("flex items-center gap-2 text-[11px] md:text-xs p-2 rounded-lg border transition-colors cursor-pointer", task.isCompleted ? "bg-purple-500/30 border-purple-500 text-white" : "bg-purple-500/10 border-purple-500/20 text-purple-100/70")}>
+                    <div className={cn("w-2 h-2 rounded-full shrink-0", task.isCompleted ? "bg-white" : "bg-purple-500")} />
+                    <span className="truncate">{task.title}</span>
                   </div>
                 ))}
               </div>
@@ -216,18 +259,14 @@ export default function ProductivityPage() {
               
               {/* Active Items List to fill space */}
               <div className="flex-1 overflow-y-auto mb-2 space-y-1.5 custom-scrollbar pr-1 mt-1">
-                {[
-                  { name: 'Read 20 pages', progress: '12/21' },
-                  { name: 'Meditation 10m', progress: '5/21' },
-                  { name: 'Drink 2L water', progress: '21/21' }
-                ].map((habit, i) => (
-                  <div key={i} className="flex items-center justify-between text-[11px] md:text-xs text-red-100/70 bg-red-500/10 p-2 rounded-lg border border-red-500/20">
+                {habits.map((habit) => (
+                  <div key={habit.id} onClick={() => handleToggle(habit.id, habit.status)} className={cn("flex items-center justify-between text-[11px] md:text-xs p-2 rounded-lg border transition-colors cursor-pointer", habit.isCompleted ? "bg-red-500/30 border-red-500/50 text-white" : "bg-red-500/10 border-red-500/20 text-red-100/70")}>
                     <div className="flex items-center gap-2 truncate">
                       <Target className="w-3 h-3 text-red-400 shrink-0" />
-                      <span className="truncate">{habit.name}</span>
+                      <span className="truncate">{habit.title}</span>
                     </div>
-                    <span className={cn("text-[9px] px-1.5 py-0.5 rounded font-bold shrink-0", habit.progress === '21/21' ? 'bg-green-500/20 text-green-400' : 'bg-red-500/20 text-red-400')}>
-                      {habit.progress === '21/21' ? 'Done' : habit.progress}
+                    <span className={cn("text-[9px] px-1.5 py-0.5 rounded font-bold shrink-0", habit.streak >= 21 ? 'bg-green-500/20 text-green-400' : 'bg-red-500/20 text-red-400')}>
+                      {habit.streak >= 21 ? 'Mastered!' : `${habit.streak} / 21`}
                     </span>
                   </div>
                 ))}

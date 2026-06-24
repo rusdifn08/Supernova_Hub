@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import Link from "next/link";
 import Image from "next/image";
 import { usePathname, useRouter } from "next/navigation";
@@ -18,6 +18,7 @@ import {
   ChevronRight
 } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { useGamificationStore } from "@/store/useGamificationStore";
 
 const navItems = [
   { name: "Dashboard", href: "/dashboard", icon: Home },
@@ -31,6 +32,11 @@ export function Sidebar() {
   const pathname = usePathname();
   const router = useRouter();
   const [isOpen, setIsOpen] = useState(true);
+  const { fetchStats } = useGamificationStore();
+
+  useEffect(() => {
+    fetchStats();
+  }, []);
 
   const handleLogout = () => {
     localStorage.removeItem("access_token");

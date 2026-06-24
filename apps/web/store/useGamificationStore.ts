@@ -16,6 +16,7 @@ interface GamificationState {
   clearExpGains: (id: string) => void;
   setPlayerName: (name: string) => void;
   setStats: (stats: Partial<GamificationState>) => void;
+  fetchStats: () => Promise<void>;
 }
 
 export const useGamificationStore = create<GamificationState>()(
@@ -82,6 +83,28 @@ export const useGamificationStore = create<GamificationState>()(
     })),
 
     setPlayerName: (name) => set({ playerName: name }),
-    setStats: (stats) => set(stats)
+    setStats: (stats) => set(stats),
+
+    fetchStats: async () => {
+      try {
+        const token = localStorage.getItem("access_token");
+        if (!token) return;
+        const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:4000'}/gamification/stats`, {
+          headers: { Authorization: `Bearer ${token}` }
+        });
+        if (res.ok) {
+          const data = await res.json();
+          set({
+            level: data.level,
+            exp: data.exp,
+            maxExp: data.maxExp,
+            gold: data.gold,
+            playerClass: data.playerClass
+          });
+        }
+      } catch (err) {
+        console.error("Failed to fetch gamification stats", err);
+      }
+    }
   })
 );

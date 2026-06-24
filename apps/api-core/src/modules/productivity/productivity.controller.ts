@@ -8,8 +8,13 @@ export class ProductivityController {
   constructor(private readonly productivityService: ProductivityService) {}
 
   @Get()
-  getDashboardData(@Request() req: any) {
+  async getDashboardData(@Request() req: any) {
     return this.productivityService.getDashboardData(req.user.sub);
+  }
+
+  @Get('calendar')
+  async getCalendarData(@Request() req: any) {
+    return this.productivityService.getCalendarData(req.user.sub);
   }
 
   @Post('todo')
