@@ -5,6 +5,9 @@ import { useParams, useRouter } from "next/navigation";
 import { ArrowLeft, CheckCircle, Circle, PlayCircle, Loader2, ChevronRight } from "lucide-react";
 import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
+import remarkMath from "remark-math";
+import rehypeKatex from "rehype-katex";
+import "katex/dist/katex.min.css";
 import { useGamificationStore } from "@/store/useGamificationStore";
 
 export default function CourseReadingPage() {
@@ -182,7 +185,10 @@ export default function CourseReadingPage() {
             <div className="flex-1 overflow-y-auto custom-scrollbar p-8 lg:p-12">
               <div className="max-w-3xl mx-auto">
                 <article className="prose prose-invert prose-blue max-w-none prose-pre:bg-[#111111] prose-pre:border prose-pre:border-white/10 prose-img:rounded-xl">
-                  <ReactMarkdown remarkPlugins={[remarkGfm]}>
+                  <ReactMarkdown 
+                    remarkPlugins={[remarkGfm, remarkMath]}
+                    rehypePlugins={[rehypeKatex]}
+                  >
                     {moduleContent.contentMd}
                   </ReactMarkdown>
                 </article>
