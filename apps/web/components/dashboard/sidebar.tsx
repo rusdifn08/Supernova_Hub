@@ -2,6 +2,7 @@
 
 import React, { useState } from "react";
 import Link from "next/link";
+import Image from "next/image";
 import { usePathname, useRouter } from "next/navigation";
 import { 
   Home, 
@@ -68,10 +69,10 @@ export function Sidebar() {
 
         {/* Logo / Brand */}
         <div className={cn("p-6 flex items-center overflow-hidden transition-all duration-300", isOpen ? "space-x-3" : "justify-center px-0")}>
-          <div className="w-8 h-8 shrink-0 rounded-full bg-gradient-to-tr from-cyan-400 to-blue-600 shadow-[0_0_15px_rgba(56,189,248,0.5)]" />
+          <Image src="/icon.png" alt="Supernova Labs Logo" width={32} height={32} className="shrink-0 drop-shadow-[0_0_15px_rgba(56,189,248,0.5)]" />
           {isOpen && (
             <span className="text-xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-white to-gray-400 whitespace-nowrap">
-              Supernova
+              Supernova Labs
             </span>
           )}
         </div>

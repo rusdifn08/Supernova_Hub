@@ -2,6 +2,7 @@
 import React, { useState } from 'react';
 import { Menu, X } from 'lucide-react';
 import Link from 'next/link';
+import Image from 'next/image';
 import { MagneticButton } from '../atoms/MagneticButton';
 
 export function Navbar() {
@@ -11,8 +12,8 @@ export function Navbar() {
     <nav className="fixed top-0 left-0 right-0 z-50 backdrop-blur-md bg-background/60 border-b border-border/40">
       <div className="container mx-auto px-4 h-16 flex items-center justify-between">
         <div className="font-bold text-xl tracking-tighter flex items-center gap-2">
-          <div className="w-8 h-8 rounded-lg bg-primary flex items-center justify-center text-primary-foreground">S</div>
-          Supernova
+          <Image src="/icon.png" width={32} height={32} alt="Supernova Labs Logo" className="drop-shadow-[0_0_15px_rgba(56,189,248,0.5)]" />
+          Supernova Labs
         </div>
         
         {/* Desktop */}
