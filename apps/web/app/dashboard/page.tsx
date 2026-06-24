@@ -29,7 +29,7 @@ export default function DashboardPage() {
       const token = localStorage.getItem("access_token");
       if (token) {
         try {
-          const res = await fetch(`http://${window.location.hostname}:4000/auth/me`, {
+          const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:4000'}/auth/me`, {
             headers: { Authorization: `Bearer ${token}` }
           });
           if (res.ok) {
@@ -76,9 +76,9 @@ export default function DashboardPage() {
       if (token) {
         try {
           const [prodRes, finRes, learnRes] = await Promise.all([
-            fetch(`http://${window.location.hostname}:4000/productivity`, { headers: { Authorization: `Bearer ${token}` } }),
-            fetch(`http://${window.location.hostname}:4000/finance`, { headers: { Authorization: `Bearer ${token}` } }),
-            fetch(`http://${window.location.hostname}:4000/learning`, { headers: { Authorization: `Bearer ${token}` } })
+            fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:4000'}/productivity`, { headers: { Authorization: `Bearer ${token}` } }),
+            fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:4000'}/finance`, { headers: { Authorization: `Bearer ${token}` } }),
+            fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:4000'}/learning`, { headers: { Authorization: `Bearer ${token}` } })
           ]);
           
           if (prodRes.ok) {
@@ -112,7 +112,7 @@ export default function DashboardPage() {
   const refreshStats = async () => {
     const token = localStorage.getItem("access_token");
     if (!token) return;
-    const res = await fetch(`http://${window.location.hostname}:4000/auth/me`, {
+    const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:4000'}/auth/me`, {
       headers: { Authorization: `Bearer ${token}` }
     });
     if (res.ok) {
@@ -128,7 +128,7 @@ export default function DashboardPage() {
     setWeeklyTasks(weeklyTasks.map(t => t.id === id ? { ...t, isCompleted: !t.isCompleted } : t));
     const token = localStorage.getItem("access_token");
     if (token) {
-      await fetch(`http://${window.location.hostname}:4000/productivity/${id}/toggle`, {
+      await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:4000'}/productivity/${id}/toggle`, {
         method: 'PATCH',
         headers: { Authorization: `Bearer ${token}` }
       });
@@ -140,7 +140,7 @@ export default function DashboardPage() {
     setToDoList(toDoList.map(t => t.id === id ? { ...t, isCompleted: !t.isCompleted } : t));
     const token = localStorage.getItem("access_token");
     if (token) {
-      await fetch(`http://${window.location.hostname}:4000/productivity/${id}/toggle`, {
+      await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:4000'}/productivity/${id}/toggle`, {
         method: 'PATCH',
         headers: { Authorization: `Bearer ${token}` }
       });
@@ -152,7 +152,7 @@ export default function DashboardPage() {
     setHabits(habits.map(t => t.id === id ? { ...t, isCompleted: !t.isCompleted } : t));
     const token = localStorage.getItem("access_token");
     if (token) {
-      const res = await fetch(`http://${window.location.hostname}:4000/productivity/${id}/toggle`, {
+      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:4000'}/productivity/${id}/toggle`, {
         method: 'PATCH',
         headers: { Authorization: `Bearer ${token}` }
       });

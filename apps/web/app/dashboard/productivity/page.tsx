@@ -33,7 +33,7 @@ export default function ProductivityPage() {
     if (!todoInput) return;
     const token = localStorage.getItem("access_token");
     if (token) {
-      await fetch(`http://${window.location.hostname}:4000/productivity/todo`, {
+      await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:4000'}/productivity/todo`, {
         method: "POST", headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
         body: JSON.stringify({ title: todoInput })
       });
@@ -47,7 +47,7 @@ export default function ProductivityPage() {
     if (!weeklyInput) return;
     const token = localStorage.getItem("access_token");
     if (token) {
-      await fetch(`http://${window.location.hostname}:4000/productivity/weekly`, {
+      await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:4000'}/productivity/weekly`, {
         method: "POST", headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
         body: JSON.stringify({ title: weeklyInput, day: selectedDay })
       });
@@ -61,7 +61,7 @@ export default function ProductivityPage() {
     if (!habitInput) return;
     const token = localStorage.getItem("access_token");
     if (token) {
-      await fetch(`http://${window.location.hostname}:4000/productivity/habit`, {
+      await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:4000'}/productivity/habit`, {
         method: "POST", headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
         body: JSON.stringify({ title: habitInput })
       });
@@ -75,7 +75,7 @@ export default function ProductivityPage() {
     if (!noteTitle) return;
     const token = localStorage.getItem("access_token");
     if (token) {
-      await fetch(`http://${window.location.hostname}:4000/productivity/note`, {
+      await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:4000'}/productivity/note`, {
         method: "POST", headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
         body: JSON.stringify({ title: noteTitle, content: noteContent })
       });
@@ -90,7 +90,7 @@ export default function ProductivityPage() {
     if (!bookTitle) return;
     const token = localStorage.getItem("access_token");
     if (token) {
-      await fetch(`http://${window.location.hostname}:4000/productivity/reading`, {
+      await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:4000'}/productivity/reading`, {
         method: "POST", headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
         body: JSON.stringify({ title: bookTitle, author: bookAuthor, totalPages: parseInt(bookTotalPages) || 0 })
       });

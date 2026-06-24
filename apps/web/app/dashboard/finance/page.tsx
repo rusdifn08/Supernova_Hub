@@ -66,7 +66,7 @@ export default function FinancePage() {
     const token = localStorage.getItem("access_token");
     if (!token) return;
     try {
-      const res = await fetch(`http://${window.location.hostname}:4000/finance`, {
+      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:4000'}/finance`, {
         headers: { Authorization: `Bearer ${token}` }
       });
       if (res.ok) {
@@ -76,7 +76,7 @@ export default function FinancePage() {
         setTotalIncome(data.totalIncome || 0);
         setTotalExpense(data.totalExpense || 0);
         
-        const catRes = await fetch(`http://${window.location.hostname}:4000/finance/categories`, {
+        const catRes = await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:4000'}/finance/categories`, {
           headers: { Authorization: `Bearer ${token}` }
         });
         if (catRes.ok) {
@@ -127,7 +127,7 @@ export default function FinancePage() {
     const finalDesc = desc.trim() || selectedCategory;
 
     try {
-      const res = await fetch(`http://${window.location.hostname}:4000/finance`, {
+      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:4000'}/finance`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -171,7 +171,7 @@ export default function FinancePage() {
     };
 
     try {
-      const res = await fetch(`http://${window.location.hostname}:4000/finance/categories`, {
+      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:4000'}/finance/categories`, {
         method: "POST",
         headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
         body: JSON.stringify({

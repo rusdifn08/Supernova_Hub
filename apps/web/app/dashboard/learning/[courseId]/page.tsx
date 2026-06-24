@@ -23,7 +23,7 @@ export default function CourseReadingPage() {
     const token = localStorage.getItem('access_token');
     if (!token) return;
     
-    fetch(`http://${window.location.hostname}:4000/learning/courses/${courseId}`, {
+    fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:4000'}/learning/courses/${courseId}`, {
       headers: { 'Authorization': `Bearer ${token}` }
     })
     .then(res => {
@@ -60,7 +60,7 @@ export default function CourseReadingPage() {
     if (!token) return;
     
     setContentLoading(true);
-    fetch(`http://${window.location.hostname}:4000/learning/modules/${activeModuleId}`, {
+    fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:4000'}/learning/modules/${activeModuleId}`, {
       headers: { 'Authorization': `Bearer ${token}` }
     })
     .then(res => {
@@ -82,7 +82,7 @@ export default function CourseReadingPage() {
     const token = localStorage.getItem('access_token');
     if (!token) return;
     
-    fetch(`http://${window.location.hostname}:4000/learning/modules/${activeModuleId}/complete`, {
+    fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:4000'}/learning/modules/${activeModuleId}/complete`, {
       method: 'POST',
       headers: { 'Authorization': `Bearer ${token}` }
     })

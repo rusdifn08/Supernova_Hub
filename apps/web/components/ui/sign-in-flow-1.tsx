@@ -507,8 +507,8 @@ export const SignInPage = ({ className }: SignInPageProps) => {
     try {
       const hostname = window.location.hostname;
       const endpoint = isSignUp 
-        ? `http://${hostname}:4000/auth/register` 
-        : `http://${hostname}:4000/auth/login`;
+        ? `${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:4000'}/auth/register` 
+        : `${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:4000'}/auth/login`;
       const body = isSignUp ? { email, password, name } : { email, password };
       
       console.log(`[AUTH CLIENT] Preparing to send ${isSignUp ? 'SignUp' : 'Login'} request...`);

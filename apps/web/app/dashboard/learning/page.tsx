@@ -27,7 +27,7 @@ export default function LearningPage() {
       return;
     }
 
-    fetch(`http://${window.location.hostname}:4000/learning/courses`, {
+    fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:4000'}/learning/courses`, {
       headers: { 'Authorization': `Bearer ${token}` }
     })
     .then(res => {

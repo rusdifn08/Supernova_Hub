@@ -39,7 +39,7 @@ export const useGamificationStore = create<GamificationState>()(
         const token = localStorage.getItem("access_token");
         if (!token) return;
 
-        const res = await fetch(`http://${window.location.hostname}:4000/gamification/exp`, {
+        const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:4000'}/gamification/exp`, {
           method: "POST",
           headers: {
             "Content-Type": "application/json",

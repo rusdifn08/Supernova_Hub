@@ -1,182 +1,164 @@
-// This is your Prisma schema file,
-// learn more about it in the docs: https://pris.ly/d/prisma-schema
-
-// Get a free hosted Postgres database in seconds: `npx create-db`
-
 generator client {
   provider = "prisma-client-js"
 }
 
 datasource db {
-  provider = "postgresql"
-  url      = env("DATABASE_URL")
+  provider  = "postgresql"
+  url       = env("DATABASE_URL")
+  directUrl = env("DIRECT_URL")
 }
 
 model User {
-  id        String   @id @default(uuid())
-  email     String   @unique
-  password  String
-  name      String?
-  
-  // Gamification fields
-  level       Int      @default(1)
-  exp         Int      @default(0)
-  maxExp      Int      @default(1000)
-  gold        Int      @default(50)
-  playerClass String   @default("Novice Scholar")
-
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-
-  // Relations
-  productivityItems ProductivityItem[]
-  notes             WorkspaceNote[]
-  expHistory        ExpHistory[]
-  readingBooks      ReadingBook[]
-  financeTransactions FinanceTransaction[]
+  id                  String               @id @default(uuid())
+  email               String               @unique
+  password            String
+  name                String?
+  createdAt           DateTime             @default(now())
+  updatedAt           DateTime             @updatedAt
+  exp                 Int                  @default(0)
+  gold                Int                  @default(50)
+  level               Int                  @default(1)
+  maxExp              Int                  @default(1000)
+  playerClass         String               @default("Novice Scholar")
+  expHistory          ExpHistory[]
   financeCategories   FinanceCategory[]
+  financeTransactions FinanceTransaction[]
+  productivityItems   ProductivityItem[]
+  readingBooks        ReadingBook[]
   learningCourses     UserCourse[]
   learningProgresses  UserModuleProgress[]
+  notes               WorkspaceNote[]
 }
 
 model FinanceTransaction {
   id        String   @id @default(uuid())
   userId    String
-  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
-  type      String   // "INCOME" or "EXPENSE"
+  type      String
   amount    Float
   name      String
   category  String
   date      DateTime @default(now())
-
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
 }
 
 model FinanceCategory {
   id        String   @id @default(uuid())
   userId    String
-  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
-  type      String   // "INCOME" or "EXPENSE"
+  type      String
   name      String
   icon      String
   color     String
   bg        String
   border    String
-
   createdAt DateTime @default(now())
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+model ProductivityItem {
+  id            String           @id @default(uuid())
+  userId        String
+  type          ProductivityType
+  title         String
+  isCompleted   Boolean          @default(false)
+  day           String?
+  createdAt     DateTime         @default(now())
+  updatedAt     DateTime         @updatedAt
+  lastCompleted DateTime?
+  streak        Int              @default(0)
+  user          User             @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+model WorkspaceNote {
+  id        String   @id @default(uuid())
+  userId    String
+  title     String
+  content   String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+model ReadingBook {
+  id             String   @id @default(uuid())
+  userId         String
+  title          String
+  author         String
+  totalPages     Int      @default(0)
+  readPages      Int      @default(0)
+  notes          String?
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+  currentChapter String?
+  status         String   @default("PLAN_TO_READ")
+  user           User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+model Course {
+  id            String         @id @default(uuid())
+  title         String
+  description   String?
+  thumbnail     String?
+  totalDuration String?
+  createdAt     DateTime       @default(now())
+  updatedAt     DateTime       @updatedAt
+  modules       CourseModule[]
+  enrollments   UserCourse[]
+}
+
+model CourseModule {
+  id         String               @id @default(uuid())
+  courseId   String
+  title      String
+  duration   String
+  orderIndex Int
+  contentMd  String
+  createdAt  DateTime             @default(now())
+  updatedAt  DateTime             @updatedAt
+  course     Course               @relation(fields: [courseId], references: [id], onDelete: Cascade)
+  progresses UserModuleProgress[]
+}
+
+model UserCourse {
+  id              String   @id @default(uuid())
+  userId          String
+  courseId        String
+  progressPercent Float    @default(0.0)
+  status          String   @default("LEARNING")
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+  course          Course   @relation(fields: [courseId], references: [id], onDelete: Cascade)
+  user            User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, courseId])
+}
+
+model UserModuleProgress {
+  id          String       @id @default(uuid())
+  userId      String
+  moduleId    String
+  isCompleted Boolean      @default(false)
+  completedAt DateTime?
+  createdAt   DateTime     @default(now())
+  updatedAt   DateTime     @updatedAt
+  module      CourseModule @relation(fields: [moduleId], references: [id], onDelete: Cascade)
+  user        User         @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, moduleId])
+}
+
+model ExpHistory {
+  id        String   @id @default(uuid())
+  userId    String
+  amount    Int
+  message   String
+  createdAt DateTime @default(now())
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
 }
 
 enum ProductivityType {
   TODO
   WEEKLY
   HABIT
-}
-
-model ProductivityItem {
-  id          String   @id @default(uuid())
-  userId      String
-  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
-  type        ProductivityType
-  title       String
-  isCompleted Boolean  @default(false)
-  day         String?  // Optional, used for WEEKLY tasks
-  streak      Int      @default(0) // Used for HABIT
-  lastCompleted DateTime? // Used for HABIT
-
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
-}
-
-model WorkspaceNote {
-  id        String   @id @default(uuid())
-  userId    String
-  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
-  title     String
-  content   String   @db.Text
-
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-}
-
-model ReadingBook {
-  id            String   @id @default(uuid())
-  userId        String
-  user          User     @relation(fields: [userId], references: [id], onDelete: Cascade)
-  title         String
-  author        String
-  totalPages    Int      @default(0)
-  readPages     Int      @default(0)
-  currentChapter String?
-  status        String   @default("PLAN_TO_READ") // READING, PLAN_TO_READ, COMPLETED
-  notes         String?  @db.Text
-
-  createdAt     DateTime @default(now())
-  updatedAt     DateTime @updatedAt
-}
-
-model Course {
-  id          String         @id @default(uuid())
-  title       String
-  description String?        @db.Text
-  thumbnail   String?
-  totalDuration String?
-  modules     CourseModule[]
-  enrollments UserCourse[]
-  
-  createdAt   DateTime       @default(now())
-  updatedAt   DateTime       @updatedAt
-}
-
-model CourseModule {
-  id          String   @id @default(uuid())
-  courseId    String
-  course      Course   @relation(fields: [courseId], references: [id], onDelete: Cascade)
-  title       String
-  duration    String
-  orderIndex  Int
-  contentMd   String   @db.Text
-  progresses  UserModuleProgress[]
-  
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
-}
-
-model UserCourse {
-  id              String   @id @default(uuid())
-  userId          String
-  user            User     @relation(fields: [userId], references: [id], onDelete: Cascade)
-  courseId        String
-  course          Course   @relation(fields: [courseId], references: [id], onDelete: Cascade)
-  progressPercent Float    @default(0.0)
-  status          String   @default("LEARNING") // LEARNING, COMPLETED
-
-  createdAt       DateTime @default(now())
-  updatedAt       DateTime @updatedAt
-
-  @@unique([userId, courseId])
-}
-
-model UserModuleProgress {
-  id          String   @id @default(uuid())
-  userId      String
-  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
-  moduleId    String
-  module      CourseModule @relation(fields: [moduleId], references: [id], onDelete: Cascade)
-  isCompleted Boolean  @default(false)
-  
-  completedAt DateTime?
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
-
-  @@unique([userId, moduleId])
-}
-model ExpHistory {
-  id        String   @id @default(uuid())
-  userId    String
-  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
-  amount    Int
-  message   String
-
-  createdAt DateTime @default(now())
 }
