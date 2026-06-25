@@ -235,8 +235,8 @@ export default function CourseReadingPage() {
                       </div>
                     );
                   })}
-                </div>
               </div>
+              );
             });
           })()}
         </div>
