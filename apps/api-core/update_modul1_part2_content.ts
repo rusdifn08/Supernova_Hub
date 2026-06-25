@@ -192,7 +192,7 @@ Di pelajaran Matematika SMA, bentuk fungsi $y = Ax - Bx^2$ adalah grafik kuadrat
 `,
 
   // Bagian 4
-  "Sub-bab 3: Hubungan antara besaran sudut (anguler) dan besaran tangensial (linear)": `Pernahkah kamu memutar roda sepeda yang terbalik dengan tanganmu? 
+  "Sub-bab 3: Besaran Anguler vs Besaran Linear": `Pernahkah kamu memutar roda sepeda yang terbalik dengan tanganmu? 
 
 Bayangkan ada seekor lalat kecil hinggap di jari-jari roda di dekat poros tengah (pusat roda), dan ada seekor kupu-kupu yang hinggap di pinggiran ban paling luar.
 Saat kamu memutar roda tersebut dengan cepat, siapa yang merasa pusing lebih dulu?
@@ -249,7 +249,7 @@ Jadi kesimpulannya: Meskipun satu benda kaku berputar dengan satu kecepatan puta
 \`\`\`
 `,
 
-  "Sub-bab 4: Percepatan sentripetal versus percepatan tangensial, dan resultan percepatan total": `Kamu mungkin pernah mendengar bahwa percepatan berarti "menambah kecepatan" (makin cepat).
+  "Sub-bab 4: Percepatan Sentripetal vs Tangensial": `Kamu mungkin pernah mendengar bahwa percepatan berarti "menambah kecepatan" (makin cepat).
 Tapi di gerak melingkar, ada satu jenis percepatan rahasia yang **tidak pernah** mengubah kecepatan, melainkan hanya **mengubah arah**!
 
 Mari berkenalan dengan dua saudara kembar beda sifat:

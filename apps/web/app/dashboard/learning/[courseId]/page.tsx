@@ -170,7 +170,9 @@ export default function CourseReadingPage() {
         const parsedQuiz = Array.isArray(p) ? p : [p];
         if (parsedQuiz.length > 0) {
           const shuffled = [...parsedQuiz].sort(() => 0.5 - Math.random());
-          setCbtQuestions(shuffled.slice(0, 5));
+          const isTryout = moduleContent.title?.toLowerCase().includes('tryout');
+          const questionCount = isTryout ? 20 : 5;
+          setCbtQuestions(shuffled.slice(0, questionCount));
           setCbtState('taking');
           setCbtAnswers({});
           setCurrentQuestionIndex(0);
@@ -499,7 +501,9 @@ export default function CourseReadingPage() {
                                  const p = JSON.parse(moduleContent.quizJson);
                                  const parsedQuiz = Array.isArray(p) ? p : [p];
                                  const shuffled = [...parsedQuiz].sort(() => 0.5 - Math.random());
-                                 setCbtQuestions(shuffled.slice(0, 5));
+                                 const isTryout = moduleContent.title?.toLowerCase().includes('tryout');
+                                 const questionCount = isTryout ? 20 : 5;
+                                 setCbtQuestions(shuffled.slice(0, questionCount));
                                  setCbtState('taking');
                                  setCbtAnswers({});
                                  setCurrentQuestionIndex(0);
