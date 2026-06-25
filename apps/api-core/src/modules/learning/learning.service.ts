@@ -93,9 +93,10 @@ export class LearningService {
 
     const progressPercent = Math.round((completedModules / allModules.length) * 100);
 
-    await this.prisma.userCourse.updateMany({
-      where: { userId, courseId: module.courseId },
-      data: { progressPercent }
+    await this.prisma.userCourse.upsert({
+      where: { userId_courseId: { userId, courseId: module.courseId } },
+      update: { progressPercent, status: progressPercent === 100 ? 'COMPLETED' : 'IN_PROGRESS' },
+      create: { userId, courseId: module.courseId, progressPercent, status: progressPercent === 100 ? 'COMPLETED' : 'IN_PROGRESS' }
     });
 
     return { progress, progressPercent };
