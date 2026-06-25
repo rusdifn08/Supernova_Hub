@@ -84,7 +84,7 @@ export default function DashboardPage() {
       const token = localStorage.getItem("access_token");
       if (token) {
         try {
-          const [prodRes, finRes, learnRes] = await Promise.all([
+          const [prodRes, finRes, learnRes, calRes] = await Promise.all([
             fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:4000'}/productivity`, { headers: { Authorization: `Bearer ${token}` } }),
             fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:4000'}/finance`, { headers: { Authorization: `Bearer ${token}` } }),
             fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:4000'}/learning`, { headers: { Authorization: `Bearer ${token}` } }),
