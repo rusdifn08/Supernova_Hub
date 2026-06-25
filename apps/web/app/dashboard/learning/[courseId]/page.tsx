@@ -10,6 +10,67 @@ import rehypeKatex from "rehype-katex";
 import "katex/dist/katex.min.css";
 import { useGamificationStore } from "@/store/useGamificationStore";
 
+const InlineQuiz = ({ data }: { data: string }) => {
+  const [state, setState] = useState<{selected: number | null, isCorrect: boolean | null}>({selected: null, isCorrect: null});
+  
+  let parsed: any = null;
+  try {
+    parsed = JSON.parse(data);
+  } catch(e) {
+    return <div className="text-red-500">Invalid Quiz JSON</div>;
+  }
+
+  return (
+    <div className="my-8 bg-blue-900/20 border border-blue-500/30 rounded-xl p-6 shadow-[0_0_15px_rgba(59,130,246,0.1)] not-prose">
+      <div className="flex items-center gap-2 mb-4">
+        <HelpCircle className="w-5 h-5 text-blue-400" />
+        <h4 className="text-lg font-bold text-blue-300 m-0">Cek Pemahaman Konsep</h4>
+      </div>
+      <p className="text-white text-base mb-4 font-medium leading-relaxed">{parsed.question}</p>
+      <div className="space-y-2 mt-4">
+        {parsed.options.map((opt: string, idx: number) => {
+          const isSelected = state.selected === idx;
+          const isRight = parsed.answer === idx;
+          const showSuccess = state.isCorrect !== null && isRight;
+          const showError = isSelected && !isRight;
+
+          return (
+            <button
+              key={idx}
+              onClick={() => {
+                if (state.isCorrect) return; // lock if already correct
+                setState({ selected: idx, isCorrect: isRight });
+              }}
+              className={`w-full text-left p-3 rounded-lg border transition-all ${
+                showSuccess ? 'bg-green-500/20 border-green-500 text-green-200' :
+                showError ? 'bg-red-500/20 border-red-500 text-red-200' :
+                isSelected ? 'bg-blue-500/20 border-blue-500 text-white' :
+                'bg-white/5 border-white/10 hover:bg-white/10 text-gray-300'
+              }`}
+            >
+              <div className="flex justify-between items-center">
+                <span>{opt}</span>
+                {showSuccess && <CheckCircle className="w-4 h-4 text-green-400" />}
+              </div>
+            </button>
+          );
+        })}
+      </div>
+      {state.selected !== null && (
+        <div className={`mt-4 p-4 rounded-lg text-sm ${state.isCorrect ? 'bg-green-500/10 text-green-300 border border-green-500/20' : 'bg-red-500/10 text-red-300 border border-red-500/20'}`}>
+          <div className="flex items-start gap-3">
+            {state.isCorrect ? <CheckCircle className="w-5 h-5 shrink-0 mt-0.5" /> : <X className="w-5 h-5 shrink-0 mt-0.5" />}
+            <div>
+              <p className="font-bold mb-1 text-base">{state.isCorrect ? 'Tepat Sekali!' : 'Masih Kurang Tepat!'}</p>
+              <p className="leading-relaxed opacity-90">{parsed.explanation}</p>
+            </div>
+          </div>
+        </div>
+      )}
+    </div>
+  );
+};
+
 export default function CourseReadingPage() {
   const { courseId } = useParams();
   const router = useRouter();
@@ -275,6 +336,15 @@ export default function CourseReadingPage() {
                   <ReactMarkdown 
                     remarkPlugins={[remarkGfm, remarkMath]}
                     rehypePlugins={[rehypeKatex]}
+                    components={{
+                      code({node, inline, className, children, ...props}: any) {
+                        const match = /language-(\w+)/.exec(className || '');
+                        if (!inline && match && match[1] === 'inlinequiz') {
+                          return <InlineQuiz data={String(children).replace(/\n$/, '')} />;
+                        }
+                        return <code className={className} {...props}>{children}</code>;
+                      }
+                    }}
                   >
                     {moduleContent.contentMd}
                   </ReactMarkdown>
