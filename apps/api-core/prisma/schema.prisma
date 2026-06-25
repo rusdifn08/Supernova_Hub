@@ -112,8 +112,10 @@ model Course {
 
 model CourseModule {
   id         String               @id @default(uuid())
-  courseId   String
-  title      String
+  courseId     String
+  chapterTitle String?
+  sectionTitle String?
+  title        String
   duration   String
   orderIndex Int
   contentMd  String
