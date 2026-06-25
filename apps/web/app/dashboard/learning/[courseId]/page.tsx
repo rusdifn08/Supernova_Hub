@@ -24,6 +24,7 @@ export default function CourseReadingPage() {
   const scrollRef = useRef<HTMLDivElement>(null);
   const [quizState, setQuizState] = useState<{selected: number | null, isCorrect: boolean | null}>({selected: null, isCorrect: null});
   const [expandedSections, setExpandedSections] = useState<Record<string, boolean>>({});
+  const [expandedChapters, setExpandedChapters] = useState<Record<string, boolean>>({});
 
   useEffect(() => {
     const token = localStorage.getItem('access_token');
@@ -56,6 +57,9 @@ export default function CourseReadingPage() {
         const activeModObj = data.course.modules.find((m: any) => m.id === nextMod);
         if (activeModObj && activeModObj.sectionTitle) {
           setExpandedSections({ [activeModObj.sectionTitle]: true });
+        }
+        if (activeModObj && activeModObj.chapterTitle) {
+          setExpandedChapters({ [activeModObj.chapterTitle]: true });
         }
       }
       setLoading(false);
@@ -178,13 +182,23 @@ export default function CourseReadingPage() {
 
             return chapterTitles.map((chap, idx) => {
               const isLocked = idx > 0 && !chapterCompletion[chapterTitles[idx - 1]];
+              const isChapExpanded = expandedChapters[chap] ?? false;
+              const toggleChap = () => setExpandedChapters(prev => ({ ...prev, [chap]: !prev[chap] }));
               
               return (
               <div key={chap} className={`space-y-2 ${isLocked ? 'opacity-50' : ''}`}>
-                <div className="flex items-center gap-2 px-2">
-                  <h3 className="text-[10px] font-bold text-gray-500 uppercase tracking-wider">{chap}</h3>
-                  {isLocked && <Lock className="w-3 h-3 text-red-400" />}
-                </div>
+                <button 
+                  onClick={toggleChap}
+                  disabled={isLocked}
+                  className="w-full flex justify-between items-center px-2 py-1.5 hover:bg-white/5 rounded-lg transition-colors"
+                >
+                  <div className="flex items-center gap-2 text-left">
+                    <h3 className="text-[10px] font-bold text-gray-500 uppercase tracking-wider">{chap}</h3>
+                    {isLocked && <Lock className="w-3 h-3 text-red-400 shrink-0" />}
+                  </div>
+                  <ChevronRight className={`w-3.5 h-3.5 text-gray-500 shrink-0 transition-transform ${isChapExpanded ? 'rotate-90' : ''}`} />
+                </button>
+                {isChapExpanded && (
                 <div className={`space-y-2 ${isLocked ? 'pointer-events-none' : ''}`}>
                   {Object.keys(grouped[chap]).map((sec) => {
                     const isExpanded = expandedSections[sec] ?? false; // default collapsed unless active
@@ -235,6 +249,8 @@ export default function CourseReadingPage() {
                       </div>
                     );
                   })}
+                </div>
+                )}
               </div>
               );
             });
