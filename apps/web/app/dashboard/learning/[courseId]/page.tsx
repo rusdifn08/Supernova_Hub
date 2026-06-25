@@ -21,13 +21,13 @@ const InlineQuiz = ({ data }: { data: string }) => {
   }
 
   return (
-    <div className="my-8 bg-blue-900/20 border border-blue-500/30 rounded-xl p-6 shadow-[0_0_15px_rgba(59,130,246,0.1)] not-prose">
+    <div className="my-8 whitespace-normal break-words bg-blue-900/20 border border-blue-500/30 rounded-xl p-6 shadow-[0_0_15px_rgba(59,130,246,0.1)] not-prose">
       <div className="flex items-center gap-2 mb-4">
         <HelpCircle className="w-5 h-5 text-blue-400" />
         <h4 className="text-lg font-bold text-blue-300 m-0">Cek Pemahaman Konsep</h4>
       </div>
       <p className="text-white text-base mb-4 font-medium leading-relaxed">{parsed.question}</p>
-      <div className="space-y-2 mt-4">
+      <div className="space-y-3 mt-4 flex flex-col">
         {parsed.options.map((opt: string, idx: number) => {
           const isSelected = state.selected === idx;
           const isRight = parsed.answer === idx;
@@ -337,6 +337,22 @@ export default function CourseReadingPage() {
                     remarkPlugins={[remarkGfm, remarkMath]}
                     rehypePlugins={[rehypeKatex]}
                     components={{
+                      pre({node, children, ...props}: any) {
+                        let isInlineQuiz = false;
+                        try {
+                          if (node?.children?.[0]?.tagName === 'code') {
+                            const className = node.children[0].properties?.className;
+                            if (Array.isArray(className) && className.includes('language-inlinequiz')) {
+                              isInlineQuiz = true;
+                            }
+                          }
+                        } catch(e) {}
+                        
+                        if (isInlineQuiz) {
+                          return <div className="w-full">{children}</div>;
+                        }
+                        return <pre {...props}>{children}</pre>;
+                      },
                       code({node, inline, className, children, ...props}: any) {
                         const match = /language-(\w+)/.exec(className || '');
                         if (!inline && match && match[1] === 'inlinequiz') {
