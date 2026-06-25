@@ -105,7 +105,14 @@ export default function DashboardPage() {
           }
           if (learnRes.ok) {
             const data = await learnRes.json();
-            setLearningCourses(data || []);
+            const enrolled = data.enrolled || [];
+            const mappedCourses = enrolled.map((enrollment: any) => ({
+              id: enrollment.courseId,
+              courseName: enrollment.course.title,
+              currentModule: enrollment.status === "COMPLETED" ? "Course Completed" : "Continue Learning",
+              progressPercent: Math.round(enrollment.progressPercent || 0)
+            }));
+            setLearningCourses(mappedCourses);
           }
           if (calRes.ok) {
             const data = await calRes.json();

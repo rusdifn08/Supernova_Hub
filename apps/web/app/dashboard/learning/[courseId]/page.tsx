@@ -1,8 +1,8 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import { useParams, useRouter } from "next/navigation";
-import { ArrowLeft, CheckCircle, Circle, PlayCircle, Loader2, ChevronRight } from "lucide-react";
+import { ArrowLeft, CheckCircle, Circle, PlayCircle, Loader2, ChevronRight, HelpCircle, X } from "lucide-react";
 import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
 import remarkMath from "remark-math";
@@ -21,6 +21,8 @@ export default function CourseReadingPage() {
   const [moduleContent, setModuleContent] = useState<any>(null);
   const [loading, setLoading] = useState(true);
   const [contentLoading, setContentLoading] = useState(false);
+  const scrollRef = useRef<HTMLDivElement>(null);
+  const [quizState, setQuizState] = useState<{selected: number | null, isCorrect: boolean | null}>({selected: null, isCorrect: null});
 
   useEffect(() => {
     const token = localStorage.getItem('access_token');
@@ -73,6 +75,11 @@ export default function CourseReadingPage() {
     .then(data => {
       setModuleContent(data.module);
       setContentLoading(false);
+      setQuizState({selected: null, isCorrect: null});
+      // Reset scroll position to top
+      if (scrollRef.current) {
+        scrollRef.current.scrollTo({ top: 0, behavior: 'smooth' });
+      }
     })
     .catch(err => {
       console.error(err);
@@ -182,7 +189,7 @@ export default function CourseReadingPage() {
           </div>
         ) : moduleContent ? (
           <>
-            <div className="flex-1 overflow-y-auto custom-scrollbar p-8 lg:p-12">
+            <div ref={scrollRef} className="flex-1 overflow-y-auto custom-scrollbar p-8 lg:p-12">
               <div className="max-w-3xl mx-auto">
                 <article className="prose prose-invert prose-blue max-w-none prose-pre:bg-[#111111] prose-pre:border prose-pre:border-white/10 prose-img:rounded-xl">
                   <ReactMarkdown 
@@ -192,27 +199,111 @@ export default function CourseReadingPage() {
                     {moduleContent.contentMd}
                   </ReactMarkdown>
                 </article>
+
+                {/* Interactive Quiz Section */}
+                {(() => {
+                  let parsedQuiz = null;
+                  try {
+                    if (moduleContent.quizJson) parsedQuiz = JSON.parse(moduleContent.quizJson);
+                  } catch(e) {}
+                  
+                  const isCompleted = progress.some(p => p.moduleId === activeModuleId && p.isCompleted);
+                  
+                  if (parsedQuiz && !isCompleted) {
+                    return (
+                      <div className="mt-12 bg-black/40 border border-blue-500/30 rounded-2xl p-6 md:p-8">
+                        <div className="flex items-center gap-3 mb-6">
+                          <div className="w-10 h-10 rounded-full bg-blue-500/20 flex items-center justify-center text-blue-400">
+                            <HelpCircle className="w-5 h-5" />
+                          </div>
+                          <h3 className="text-xl font-bold text-white">Knowledge Check</h3>
+                        </div>
+                        <p className="text-gray-200 text-lg mb-6">{parsedQuiz.question}</p>
+                        <div className="space-y-3">
+                          {parsedQuiz.options.map((opt: string, idx: number) => {
+                            const isSelected = quizState.selected === idx;
+                            const isRight = parsedQuiz.answer === idx;
+                            const showSuccess = isSelected && isRight;
+                            const showError = isSelected && !isRight;
+
+                            return (
+                              <button
+                                key={idx}
+                                onClick={() => {
+                                  if (quizState.isCorrect) return;
+                                  setQuizState({ selected: idx, isCorrect: isRight });
+                                }}
+                                className={`w-full text-left p-4 rounded-xl border transition-all ${
+                                  showSuccess ? 'bg-green-500/20 border-green-500 text-green-200' :
+                                  showError ? 'bg-red-500/20 border-red-500 text-red-200' :
+                                  isSelected ? 'bg-blue-500/20 border-blue-500 text-white' :
+                                  'bg-white/5 border-white/10 hover:bg-white/10 text-gray-300'
+                                }`}
+                              >
+                                <div className="flex justify-between items-center">
+                                  <span>{opt}</span>
+                                  {showSuccess && <CheckCircle className="w-5 h-5 text-green-400" />}
+                                </div>
+                              </button>
+                            );
+                          })}
+                        </div>
+                        {quizState.selected !== null && !quizState.isCorrect && (
+                          <p className="text-red-400 mt-4 text-sm flex items-center gap-2">
+                            <X className="w-4 h-4" /> Jawaban belum tepat. Coba lagi!
+                          </p>
+                        )}
+                        {quizState.isCorrect && (
+                          <p className="text-green-400 mt-4 text-sm flex items-center gap-2 font-bold">
+                            <CheckCircle className="w-4 h-4" /> Tepat sekali! Anda bisa melanjutkan.
+                          </p>
+                        )}
+                      </div>
+                    );
+                  }
+                  return null;
+                })()}
+
               </div>
             </div>
             
             {/* Bottom Bar Actions */}
             <div className="shrink-0 p-4 border-t border-white/10 bg-black/60 backdrop-blur-md flex items-center justify-center">
               <div className="max-w-3xl w-full flex justify-end">
-                {progress.some(p => p.moduleId === activeModuleId && p.isCompleted) ? (
-                  <button 
-                    disabled
-                    className="flex items-center gap-2 bg-green-500/20 text-green-400 px-6 py-2.5 rounded-full font-bold text-sm"
-                  >
-                    <CheckCircle className="w-4 h-4" /> Completed
-                  </button>
-                ) : (
-                  <button 
-                    onClick={handleMarkCompleted}
-                    className="flex items-center gap-2 bg-blue-600 hover:bg-blue-500 text-white px-6 py-2.5 rounded-full font-bold text-sm shadow-[0_0_15px_rgba(37,99,235,0.4)] transition-all hover:scale-105 active:scale-95"
-                  >
-                    Mark as Completed <ChevronRight className="w-4 h-4" />
-                  </button>
-                )}
+                {(() => {
+                  let parsedQuiz = null;
+                  try {
+                    if (moduleContent.quizJson) parsedQuiz = JSON.parse(moduleContent.quizJson);
+                  } catch(e) {}
+                  
+                  const isCompleted = progress.some(p => p.moduleId === activeModuleId && p.isCompleted);
+                  const canComplete = isCompleted || !parsedQuiz || quizState.isCorrect;
+
+                  if (isCompleted) {
+                    return (
+                      <button 
+                        disabled
+                        className="flex items-center gap-2 bg-green-500/20 text-green-400 px-6 py-2.5 rounded-full font-bold text-sm"
+                      >
+                        <CheckCircle className="w-4 h-4" /> Completed
+                      </button>
+                    )
+                  } else {
+                    return (
+                      <button 
+                        onClick={handleMarkCompleted}
+                        disabled={!canComplete}
+                        className={`flex items-center gap-2 px-6 py-2.5 rounded-full font-bold text-sm transition-all ${
+                          canComplete 
+                            ? 'bg-blue-600 hover:bg-blue-500 text-white shadow-[0_0_15px_rgba(37,99,235,0.4)] hover:scale-105 active:scale-95' 
+                            : 'bg-gray-600/50 text-gray-500 cursor-not-allowed'
+                        }`}
+                      >
+                        Mark as Completed <ChevronRight className="w-4 h-4" />
+                      </button>
+                    )
+                  }
+                })()}
               </div>
             </div>
           </>

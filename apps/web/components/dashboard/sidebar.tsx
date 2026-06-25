@@ -38,6 +38,15 @@ export function Sidebar() {
     fetchStats();
   }, []);
 
+  useEffect(() => {
+    // Auto-collapse sidebar when reading a module
+    if (pathname.includes("/dashboard/learning/") && pathname.length > "/dashboard/learning/".length) {
+      setIsOpen(false);
+    } else if (window.innerWidth > 768) {
+      setIsOpen(true);
+    }
+  }, [pathname]);
+
   const handleLogout = () => {
     localStorage.removeItem("access_token");
     router.push("/sign-in");

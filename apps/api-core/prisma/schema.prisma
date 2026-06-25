@@ -117,6 +117,7 @@ model CourseModule {
   duration   String
   orderIndex Int
   contentMd  String
+  quizJson   String?              @db.Text
   createdAt  DateTime             @default(now())
   updatedAt  DateTime             @updatedAt
   course     Course               @relation(fields: [courseId], references: [id], onDelete: Cascade)
