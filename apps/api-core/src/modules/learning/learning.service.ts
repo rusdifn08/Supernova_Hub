@@ -14,6 +14,15 @@ export class LearningService {
           course: {
             include: {
               modules: {
+                select: {
+                  id: true,
+                  title: true,
+                  orderIndex: true,
+                  duration: true,
+                  courseId: true,
+                  createdAt: true,
+                  updatedAt: true,
+                },
                 orderBy: { orderIndex: 'asc' }
               }
             }
@@ -26,6 +35,15 @@ export class LearningService {
     const allCourses = await this.prisma.course.findMany({
       include: {
         modules: {
+          select: {
+            id: true,
+            title: true,
+            orderIndex: true,
+            duration: true,
+            courseId: true,
+            createdAt: true,
+            updatedAt: true,
+          },
           orderBy: { orderIndex: 'asc' }
         }
       }
@@ -39,6 +57,15 @@ export class LearningService {
       where: { id: courseId },
       include: {
         modules: {
+          select: {
+            id: true,
+            title: true,
+            orderIndex: true,
+            duration: true,
+            courseId: true,
+            createdAt: true,
+            updatedAt: true,
+          },
           orderBy: { orderIndex: 'asc' }
         }
       }

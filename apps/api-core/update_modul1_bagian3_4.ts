@@ -2,7 +2,7 @@ import { PrismaClient } from '@prisma/client';
 
 const prisma = new PrismaClient();
 
-const contentData = {
+const contentData: Record<string, string> = {
   "Sub-bab 1: Prinsip Superposisi Gerak X dan Y": `Halo! Selamat datang di dunia 2 Dimensi. Sejauh ini, kita hanya belajar benda yang bergerak lurus maju-mundur (sumbu X) atau atas-bawah (sumbu Y). Tapi di dunia nyata, gerakan jarang sekali yang hanya lurus.
 
 Pernahkah kamu bermain *Angry Birds*? Atau melempar bola basket ke dalam ring? Bola itu bergerak maju ke depan (sumbu X), tetapi pada saat yang bersamaan, ia juga terbang ke atas lalu jatuh ke bawah ditarik gravitasi (sumbu Y).
