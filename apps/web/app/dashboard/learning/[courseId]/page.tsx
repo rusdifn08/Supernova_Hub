@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect, useRef } from "react";
 import { useParams, useRouter } from "next/navigation";
-import { ArrowLeft, CheckCircle, Circle, PlayCircle, Loader2, ChevronRight, HelpCircle, X } from "lucide-react";
+import { ArrowLeft, CheckCircle, Circle, PlayCircle, Loader2, ChevronRight, HelpCircle, X, Lock } from "lucide-react";
 import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
 import remarkMath from "remark-math";
@@ -166,10 +166,26 @@ export default function CourseReadingPage() {
               grouped[chap][sec].push(mod);
             });
 
-            return Object.keys(grouped).map((chap) => (
-              <div key={chap} className="space-y-2">
-                <h3 className="text-[10px] font-bold text-gray-500 uppercase tracking-wider px-2">{chap}</h3>
-                <div className="space-y-2">
+            const chapterTitles = Object.keys(grouped);
+            const chapterCompletion: Record<string, boolean> = {};
+            
+            chapterTitles.forEach(chap => {
+              const allModsInChap: any[] = [];
+              Object.values(grouped[chap]).forEach(secMods => allModsInChap.push(...secMods));
+              const isCompleted = allModsInChap.every(m => progress.some(p => p.moduleId === m.id && p.isCompleted));
+              chapterCompletion[chap] = isCompleted;
+            });
+
+            return chapterTitles.map((chap, idx) => {
+              const isLocked = idx > 0 && !chapterCompletion[chapterTitles[idx - 1]];
+              
+              return (
+              <div key={chap} className={`space-y-2 ${isLocked ? 'opacity-50' : ''}`}>
+                <div className="flex items-center gap-2 px-2">
+                  <h3 className="text-[10px] font-bold text-gray-500 uppercase tracking-wider">{chap}</h3>
+                  {isLocked && <Lock className="w-3 h-3 text-red-400" />}
+                </div>
+                <div className={`space-y-2 ${isLocked ? 'pointer-events-none' : ''}`}>
                   {Object.keys(grouped[chap]).map((sec) => {
                     const isExpanded = expandedSections[sec] ?? false; // default collapsed unless active
                     const toggleSec = () => setExpandedSections(prev => ({ ...prev, [sec]: !prev[sec] }));
@@ -210,7 +226,6 @@ export default function CourseReadingPage() {
                                     <div className={`text-[12px] leading-snug font-medium line-clamp-2 ${isActive ? 'text-white' : isCompleted ? 'text-gray-300' : 'text-gray-400'}`}>
                                       {mod.title}
                                     </div>
-                                    <div className="text-[9px] text-gray-500 mt-1">{mod.duration}</div>
                                   </div>
                                 </button>
                               );
@@ -222,7 +237,7 @@ export default function CourseReadingPage() {
                   })}
                 </div>
               </div>
-            ));
+            });
           })()}
         </div>
       </div>
