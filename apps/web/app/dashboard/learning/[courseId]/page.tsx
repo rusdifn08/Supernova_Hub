@@ -22,7 +22,7 @@ export default function CourseReadingPage() {
   const [loading, setLoading] = useState(true);
   const [contentLoading, setContentLoading] = useState(false);
   const scrollRef = useRef<HTMLDivElement>(null);
-  const [quizState, setQuizState] = useState<{selected: number | null, isCorrect: boolean | null}>({selected: null, isCorrect: null});
+  const [quizState, setQuizState] = useState<Record<number, {selected: number | null, isCorrect: boolean | null}>>({});
   const [expandedSections, setExpandedSections] = useState<Record<string, boolean>>({});
   const [expandedChapters, setExpandedChapters] = useState<Record<string, boolean>>({});
 
@@ -86,17 +86,20 @@ export default function CourseReadingPage() {
     .then(data => {
       setModuleContent(data.module);
       setContentLoading(false);
-      setQuizState({selected: null, isCorrect: null});
-      // Reset scroll position to top
-      if (scrollRef.current) {
-        scrollRef.current.scrollTo({ top: 0, behavior: 'smooth' });
-      }
+      setQuizState({});
+      // Scroll will be handled by a separate useEffect
     })
     .catch(err => {
       console.error(err);
       setContentLoading(false);
     });
   }, [activeModuleId]);
+
+  useEffect(() => {
+    if (scrollRef.current) {
+      scrollRef.current.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+  }, [moduleContent]);
 
   const handleMarkCompleted = () => {
     if (!activeModuleId || !course) return;
@@ -279,62 +282,72 @@ export default function CourseReadingPage() {
 
                 {/* Interactive Quiz Section */}
                 {(() => {
-                  let parsedQuiz = null;
+                  let parsedQuiz: any[] = [];
                   try {
-                    if (moduleContent.quizJson) parsedQuiz = JSON.parse(moduleContent.quizJson);
+                    if (moduleContent.quizJson) {
+                      const p = JSON.parse(moduleContent.quizJson);
+                      parsedQuiz = Array.isArray(p) ? p : [p];
+                    }
                   } catch(e) {}
                   
                   const isCompleted = progress.some(p => p.moduleId === activeModuleId && p.isCompleted);
                   
-                  if (parsedQuiz && !isCompleted) {
+                  if (parsedQuiz.length > 0 && !isCompleted) {
                     return (
-                      <div className="mt-12 bg-black/40 border border-blue-500/30 rounded-2xl p-6 md:p-8">
-                        <div className="flex items-center gap-3 mb-6">
-                          <div className="w-10 h-10 rounded-full bg-blue-500/20 flex items-center justify-center text-blue-400">
-                            <HelpCircle className="w-5 h-5" />
-                          </div>
-                          <h3 className="text-xl font-bold text-white">Knowledge Check</h3>
-                        </div>
-                        <p className="text-gray-200 text-lg mb-6">{parsedQuiz.question}</p>
-                        <div className="space-y-3">
-                          {parsedQuiz.options.map((opt: string, idx: number) => {
-                            const isSelected = quizState.selected === idx;
-                            const isRight = parsedQuiz.answer === idx;
-                            const showSuccess = isSelected && isRight;
-                            const showError = isSelected && !isRight;
-
-                            return (
-                              <button
-                                key={idx}
-                                onClick={() => {
-                                  if (quizState.isCorrect) return;
-                                  setQuizState({ selected: idx, isCorrect: isRight });
-                                }}
-                                className={`w-full text-left p-4 rounded-xl border transition-all ${
-                                  showSuccess ? 'bg-green-500/20 border-green-500 text-green-200' :
-                                  showError ? 'bg-red-500/20 border-red-500 text-red-200' :
-                                  isSelected ? 'bg-blue-500/20 border-blue-500 text-white' :
-                                  'bg-white/5 border-white/10 hover:bg-white/10 text-gray-300'
-                                }`}
-                              >
-                                <div className="flex justify-between items-center">
-                                  <span>{opt}</span>
-                                  {showSuccess && <CheckCircle className="w-5 h-5 text-green-400" />}
+                      <div className="mt-12 space-y-6">
+                        {parsedQuiz.map((q, qIdx) => {
+                          const state = quizState[qIdx] || { selected: null, isCorrect: null };
+                          return (
+                            <div key={qIdx} className="bg-black/40 border border-blue-500/30 rounded-2xl p-6 md:p-8">
+                              <div className="flex items-center gap-3 mb-6">
+                                <div className="w-10 h-10 rounded-full bg-blue-500/20 flex items-center justify-center text-blue-400 shrink-0">
+                                  <HelpCircle className="w-5 h-5" />
                                 </div>
-                              </button>
-                            );
-                          })}
-                        </div>
-                        {quizState.selected !== null && !quizState.isCorrect && (
-                          <p className="text-red-400 mt-4 text-sm flex items-center gap-2">
-                            <X className="w-4 h-4" /> Jawaban belum tepat. Coba lagi!
-                          </p>
-                        )}
-                        {quizState.isCorrect && (
-                          <p className="text-green-400 mt-4 text-sm flex items-center gap-2 font-bold">
-                            <CheckCircle className="w-4 h-4" /> Tepat sekali! Anda bisa melanjutkan.
-                          </p>
-                        )}
+                                <h3 className="text-xl font-bold text-white">Knowledge Check {parsedQuiz.length > 1 ? qIdx + 1 : ''}</h3>
+                              </div>
+                              <p className="text-gray-200 text-lg mb-6">{q.question}</p>
+                              <div className="space-y-3">
+                                {q.options.map((opt: string, idx: number) => {
+                                  const isSelected = state.selected === idx;
+                                  const isRight = q.answer === idx;
+                                  const showSuccess = isSelected && isRight;
+                                  const showError = isSelected && !isRight;
+
+                                  return (
+                                    <button
+                                      key={idx}
+                                      onClick={() => {
+                                        if (state.isCorrect) return;
+                                        setQuizState(prev => ({ ...prev, [qIdx]: { selected: idx, isCorrect: isRight } }));
+                                      }}
+                                      className={`w-full text-left p-4 rounded-xl border transition-all ${
+                                        showSuccess ? 'bg-green-500/20 border-green-500 text-green-200' :
+                                        showError ? 'bg-red-500/20 border-red-500 text-red-200' :
+                                        isSelected ? 'bg-blue-500/20 border-blue-500 text-white' :
+                                        'bg-white/5 border-white/10 hover:bg-white/10 text-gray-300'
+                                      }`}
+                                    >
+                                      <div className="flex justify-between items-center">
+                                        <span>{opt}</span>
+                                        {showSuccess && <CheckCircle className="w-5 h-5 text-green-400" />}
+                                      </div>
+                                    </button>
+                                  );
+                                })}
+                              </div>
+                              {state.selected !== null && !state.isCorrect && (
+                                <p className="text-red-400 mt-4 text-sm flex items-center gap-2">
+                                  <X className="w-4 h-4" /> Jawaban belum tepat. Coba lagi!
+                                </p>
+                              )}
+                              {state.isCorrect && (
+                                <p className="text-green-400 mt-4 text-sm flex items-center gap-2 font-bold">
+                                  <CheckCircle className="w-4 h-4" /> Tepat sekali!
+                                </p>
+                              )}
+                            </div>
+                          );
+                        })}
                       </div>
                     );
                   }
@@ -348,13 +361,17 @@ export default function CourseReadingPage() {
             <div className="shrink-0 p-4 border-t border-white/10 bg-black/60 backdrop-blur-md flex items-center justify-center">
               <div className="max-w-3xl w-full flex justify-end">
                 {(() => {
-                  let parsedQuiz = null;
+                  let parsedQuiz: any[] = [];
                   try {
-                    if (moduleContent.quizJson) parsedQuiz = JSON.parse(moduleContent.quizJson);
+                    if (moduleContent.quizJson) {
+                      const p = JSON.parse(moduleContent.quizJson);
+                      parsedQuiz = Array.isArray(p) ? p : [p];
+                    }
                   } catch(e) {}
                   
                   const isCompleted = progress.some(p => p.moduleId === activeModuleId && p.isCompleted);
-                  const canComplete = isCompleted || !parsedQuiz || quizState.isCorrect;
+                  const allQuizzesCorrect = parsedQuiz.length === 0 || parsedQuiz.every((_, i) => quizState[i]?.isCorrect);
+                  const canComplete = isCompleted || allQuizzesCorrect;
 
                   if (isCompleted) {
                     return (
